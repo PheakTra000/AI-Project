@@ -2,7 +2,7 @@
 import socket
 import threading
 
-HOST = '100.80.33.47'
+HOST = '100.81.1.108'
 PORT = 1234
 
 def main():
