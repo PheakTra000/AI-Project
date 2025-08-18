@@ -2,68 +2,71 @@ import socket
 import threading
 
 HOST = '100.81.1.108'
-PORT = 1234 # we can use any port from 0 to 65535
+PORT = 1234
 LISTENER_LIMIT = 5
-active_clients = [] #list of all currently connected users
+active_clients = []  # list of (username, client_socket)
 
-#function to listen for upcoming messages from a client
 def listen_for_messages(client, username):
     while True:
-        message = client.recv(2048).decode('utf-8')
-        if message != '':
-            final_msg = username + ': ' + message
-            send_messages_to_all(final_msg)
-        else:
-            print(f"The message send from client {username} is empty")
+        try:
+            message = client.recv(2048).decode('utf-8')
+            if message:
+                final_msg = f"{username}: {message}"
+                send_messages_to_all(final_msg)
+            else:
+                print(f"Client {username} disconnected")
+                remove_client(client)
+                break
+        except:
+            print(f"Connection with {username} lost")
+            remove_client(client)
+            break
 
-#function to send the message to a single client
 def send_messages_to_client(client, message):
-    client.sendall(message.encode())
+    try:
+        client.sendall(message.encode())
+    except:
+        remove_client(client)
 
-# function to send message to all client that are currently connected to this server
-def send_messages_to_all(from_username, message):
+def send_messages_to_all(message):
+    for username, client in active_clients:
+        send_messages_to_client(client, message)
+
+def remove_client(client):
     for user in active_clients:
-        send_messages_to_client(user[1], message)
+        if user[1] == client:
+            active_clients.remove(user)
+            break
+    client.close()
 
-
-#function to hand client
 def client_handler(client):
-
-    # server will listen for client message that will contain the username
-    while True:
+    try:
         username = client.recv(2048).decode('utf-8')
-        if username != '':
+        if username:
             active_clients.append((username, client))
+            print(f"{username} joined the chat")
+            threading.Thread(target=listen_for_messages, args=(client, username), daemon=True).start()
         else:
-            print("Client name is empty")
-    threading.Thread(target=listen_for_messages, args=(client, username, )).start()
+            client.close()
+    except:
+        client.close()
 
 def main():
-    # creating the socket class object
-    # AF_INET: we are going to use IPv4 address
-    # SOCK_STERAM: using TCP packets for communication
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # creating a try catch block
     try:
-        # provide the server with an address in the form of host ip and port
         server.bind((HOST, PORT))
-        print(f"Running this server on {HOST} {PORT}")
+        print(f"Running server on {HOST}:{PORT}")
     except:
-        print(f"Unable to bind to host {HOST} and port {PORT}")
+        print(f"Unable to bind to {HOST}:{PORT}")
+        return
 
-    # set server limit
     server.listen(LISTENER_LIMIT)
+    print("Server is listening...")
 
-    # this while loop will keep listening to client connections
     while True:
-
         client, address = server.accept()
-        print(f"Successfully connected to client{address[0]} {address[1]}")
-
-        threading.Thread(target=client_handler, args=(client, )).start()
-
-
+        print(f"Connected to client {address[0]}:{address[1]}")
+        threading.Thread(target=client_handler, args=(client,), daemon=True).start()
 
 if __name__ == '__main__':
     main()
