@@ -1,7 +1,7 @@
 import socket
 import threading
 
-HOST = '127.0.0.1'
+HOST = '100.81.1.108'
 PORT = 1234 # we can use any port from 0 to 65535
 LISTENER_LIMIT = 5
 
