@@ -1,7 +1,7 @@
 import socket
 import threading
 
-HOST = '100.81.1.108'
+HOST = '100.69.34.80'
 PORT = 1234
 
 def listen_for_messages_from_server(client):
