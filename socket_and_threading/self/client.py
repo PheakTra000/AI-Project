@@ -23,6 +23,7 @@
 #     main()
 
 import socket
+import threading
 
 host = '100.81.1.108'
 port = 1234
@@ -34,11 +35,23 @@ def send_message(m):
     data = s.recv(1024).decode('ascii')
     print(data)
 
+def receive_message():
+    while True:
+        try:
+            data = s.recv(1024).decode('ascii')
+            if data:
+                print(f'\n{data}')
+        except:
+            break
+
+
 
 def main():
     s.connect((host, port))
 
     msg = "Hello from client"
+
+    threading.Thread(target=receive_message, daemon=True).start()
     while True:
         s.send(msg.encode('ascii'))
         data = s.recv(1024)
