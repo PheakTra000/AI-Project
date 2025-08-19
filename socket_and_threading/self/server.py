@@ -35,7 +35,7 @@ import socket
 from _thread import start_new_thread
 import threading
 
-host = ''
+host = '100.81.1.108'
 port = 1234
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create socket with IPv4 and port 
