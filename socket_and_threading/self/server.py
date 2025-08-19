@@ -49,9 +49,9 @@ def handle_client(c, addr):
                 break
                 
             # broadcast to all client
-            if c in clients:
-                if clients != c:
-                    clients.send(f"{addr[0]}:{addr[1]} say: {data.decode('ascii')}".encode('ascii'))
+            for client in clients:
+                if client != c:
+                    client.send(f"{addr[0]}:{addr[1]} say: {data.decode('ascii')}".encode('ascii'))
         except:
             break
 
